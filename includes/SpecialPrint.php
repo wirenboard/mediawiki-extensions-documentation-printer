@@ -84,20 +84,19 @@ class SpecialPrint extends \SpecialPage {
         $menuHTML.= '</div>';
 
         $cssHTML = '<style>';
+        $cssHTML.= '@media print { @page { size: auto; margin-top: 6mm; margin-bottom: 6mm; }  }';
         $cssHTML.= '.page-break { page-break-before: always; }';
-        $cssHTML.= '.title-page { height: 100vh; page-break-after: always; }';
-        $cssHTML.= '.title-page-content { display: flex; flex-direction: column; flex-wrap: wrap; align-items: center; justify-content: center; height: 100%; }';
+        $cssHTML.= '.title-page { height: calc(100vh - 100px); page-break-after: always; }';
+        $cssHTML.= '.title-page-content { display: flex; flex-direction: column; flex-wrap: wrap; justify-content: center; height: 100%; }';
         $cssHTML.= '.row { display: flex; flex-wrap: wrap; }';
         $cssHTML.= '.col { flex-basis: 0; flex-grow: 1; max-width: 100%; }';
         $cssHTML.= '.col-auto { flex: 0 0 auto; width: auto; max-width: 100%; }';
         $cssHTML.= '</style>';
         $out->addHTML($cssHTML);
 
-        $titleHTML = '<h1 id="firstHeading" style="margin-top: 100vh" class="firstHeading">'.$page->getTitle()->getText().'</h1>';
+        $titleHTML = '<h1 id="firstHeading" class="firstHeading">'.$page->getTitle()->getText().'</h1>';
 
-        $cssHTML = '<style>.page-break { page-break-before: always; }</style>';
-
-        $currentUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].urldecode($_SERVER['REQUEST_URI']);
+        $currentUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].'/wiki/'.$wgRequest->getText('page');
 
         $titlePageHTML = '<div class="title-page">';
         $titlePageHTML.= '    <div class="row" style="flex: 0 0 auto;">';
@@ -109,7 +108,11 @@ class SpecialPrint extends \SpecialPage {
         $titlePageHTML.= '    </div>';
         $titlePageHTML.= '    <div class="title-page-content">';
         $titlePageHTML.= '        <h1 style="display: block; margin-top: 0; border: 0; text-align: center; font-size: 40px; font-weight: bold; color: #5cb300">'.$page->getTitle()->getText().'</h1>';
-        $titlePageHTML.= '        <p style="display: block">Тут служебный текст</p>';
+        $titlePageHTML.= '        <div style="margin-top: 5px;">';
+        $titlePageHTML.= '            <span style="display: block; text-align: center; font-size: 25px;">Руководство по эксплуатации</span>';
+        $titlePageHTML.= '            <span style="display: block; margin-top: 10px; text-align: center; font-size: 15px;">Самая актуальная документация всегда доступна на нашем сайте по ссылке: <a href="'.$currentUrl.'">'.$currentUrl.'</a></span>';
+        $titlePageHTML.= '        </div>';
+        $titlePageHTML.= '        <div style="margin-top: 15px; text-align: center; font-size: 15px;">Этот документ составлен автоматически из основной страницы документации<br>и ссылок первого уровня.</div>';
         $titlePageHTML.= '    </div>';
         $titlePageHTML.= '</div>';
         $out->addHTML($titlePageHTML);
@@ -120,6 +123,8 @@ class SpecialPrint extends \SpecialPage {
             $out->addHTML('<h1 id="'.$pageLink->getTitle()->mUrlform.'" class="page-break">'.$this->getPageLinkTitle($pageLink).'</h1>');
             $out->addHTML($this->cleanText($pageLink->getParserOutput()->getText()));
         }
+
+        $out->setPageTitle($page->getTitle()->getText());
 	}
 
 	protected function getGroupName() {
