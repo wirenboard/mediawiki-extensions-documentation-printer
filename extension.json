@@ -1,0 +1,45 @@
+{
+	"name": "WbPrint",
+	"author": [
+		"Sergey Safronov"
+	],
+	"url": "https://www.mediawiki.org/wiki/Extension:Print",
+	"descriptionmsg": "Print page",
+	"license-name": "GPL-2.0-or-later",
+	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.32.0"
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\WbPrint\\": "includes/"
+	},
+	"config": {
+
+	},
+	"HookHandlers": {
+		"WbPrintHooks": {
+			"class": "MediaWiki\\Extension\\WbPrint\\Hooks"
+		}
+	},
+	"MessagesDirs": {
+		"WbPrint": [
+			"i18n"
+		]
+	},
+	"SpecialPages": {
+		"Print": "MediaWiki\\Extension\\WbPrint\\SpecialPrint"
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "resources",
+		"remoteExtPath": "WbPrint/resources"
+	},
+	"ResourceModules": {
+		"ext.wbPrint": {
+			"dependencies": [],
+			"messages": [],
+			"styles": [],
+			"scripts": []
+		}
+	},
+	"manifest_version": 2
+}
