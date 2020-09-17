@@ -1,10 +1,20 @@
 <?php
 namespace MediaWiki\Extension\WbPrint;
 
+require_once __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
+
+$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
+$dotenv->load();
+
 use Article;
+
+use Wikimedia\Rdbms\DBConnRef;
 
 class SpecialPrint extends \SpecialPage {
 
+    /**
+     * @var DBConnRef
+     */
     private $db;
 
 	/**
@@ -16,33 +26,93 @@ class SpecialPrint extends \SpecialPage {
 		$this->db = wfGetDB(DB_REPLICA);
 	}
 
-	/**
-	 * Shows the page to the user.
-	 * @param string $sub The subpage string argument (if any).
-	 *  [[Special:HelloWorld/subpage]].
-	 */
+    /**
+     * Shows the page to the user.
+     * @param string $sub The subpage string argument (if any).
+     * @throws \MWException
+     */
 	public function execute( $sub ) {
         global $wgRequest;
 
-		$out = $this->getOutput();
-
 		$pageTitle = $wgRequest->getText('page');
 		if (!$pageTitle) {
-            $out->setPageTitle($this->msg( 'error-title'));
-            $out->addWikiMsg('error-page-not-set');
-            return;
+            return $this->executeList();
         }
+		return $this->executePage($pageTitle);
+	}
+
+    /**
+     * Render queue list
+     */
+	private function executeList() {
+        global $wgRequest;
+
+        $cacheDir = realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..').DIRECTORY_SEPARATOR.$_ENV['CACHE_DIR'];
+        $urlDir = $_ENV['DOMAIN'].'/wiki/'.$_ENV['CACHE_DIR'];
+
+        $out = $this->getOutput();
+
+        $page = $this->getPage([
+            'page_title' => 'Print_list',
+        ]);
+        if (!$page) {
+            $out->setPageTitle($this->msg( 'error-title'));
+            $out->addWikiMsg('error-print-list-page-not-found');
+        }
+
+        $page = Article::newFromID($page->page_id);
+
+        $pageLinks = $page->getParserOutput()->mLinks;
+
+        if ($pageLinks && is_array($pageLinks)) {
+            $links = array_keys(current($pageLinks));
+            $tmpLinks = [];
+            foreach ($links as $name) {
+                $page = $this->getPage([
+                    'page_title' => $name,
+                ]);
+                if (!$page) {
+                    continue;
+                }
+
+                $page = Article::newFromID($page->page_id);
+                $link = '<a href="/wiki/'.$page->getTitle()->mUrlform.'" target="_blank">'.$page->getTitle()->mTextform.'</a>';
+
+                $fileName = $name.'.pdf';
+                $filePath = $cacheDir.DIRECTORY_SEPARATOR.$fileName;
+                $fileUrl = $urlDir.'/'.$fileName;
+                if (file_exists($filePath)) {
+                    $fileTime = filemtime($filePath);
+                    $link.= ' (<a href="'.$fileUrl.'">'.date('d-m-Y H:i', $fileTime).'</a>)';
+                }
+
+                $tmpLinks[] = $link;
+            }
+
+            $out->addHTML(implode('<br>', $tmpLinks));
+        }
+    }
+
+    /**
+     * Render page
+     * @param string $pageTitle
+     * @throws \MWException
+     */
+	private function executePage($pageTitle) {
+        global $wgRequest;
+
+        $out = $this->getOutput();
 
         $page = $this->getPage([
             'page_title' => $pageTitle,
         ]);
-		if (!$page) {
+        if (!$page) {
             $out->setPageTitle($this->msg( 'error-title'));
             $out->addWikiMsg('error-page-not-found');
         }
 
         $page = Article::newFromID($page->page_id);
-		$pageText = $this->cleanText($page->getParserOutput()->getText());
+        $pageText = $this->cleanText($page->getParserOutput()->getText());
         $pageLinks = $this->getPageLinksFromText($pageText);
 
         $menuLinks = [
@@ -125,8 +195,11 @@ class SpecialPrint extends \SpecialPage {
         }
 
         $out->setPageTitle($page->getTitle()->getText());
-	}
+    }
 
+    /**
+     * @return string
+     */
 	protected function getGroupName() {
 		return 'other';
 	}
