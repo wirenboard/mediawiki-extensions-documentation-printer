@@ -23,7 +23,7 @@ wfLoadExtension('WbPrint');
 Добавляем запуск генерации PDF раз в сутки
 
 ```shell script
-@daily /usr/bin/php /path/to/wiki/extensions/WbPrint/cron.php
+* * * * * /usr/bin/php /path/to/wiki/extensions/WbPrint/cron.php
 ```
 
 #### Использование
