@@ -128,9 +128,6 @@ class SpecialPrint extends \SpecialPage {
                         'title' => $this->getPageLinkTitle($pageLink),
                         'url' => '#'.$pageLink->getTitle()->mUrlform,
                     ];
-
-                    $pageLinks[] = $pageLink;
-
                     $pageText = str_replace('/wiki/'.$pageLink->getTitle()->mUrlform, '#'.$pageLink->getTitle()->mUrlform, $pageText);
                 }
             }
@@ -273,7 +270,16 @@ class SpecialPrint extends \SpecialPage {
             if ($page) {
                 $pageLink = Article::newFromID($page->page_id);
                 if ($pageLink) {
-                    $pageLinks[] = $pageLink;
+                    $isFound = false;
+                    foreach ($pageLinks as $pl) {
+                        if ($pl->getPage()->mTitle->mUrlform == $pageLink->getPage()->mTitle->mUrlform) {
+                            $isFound = true;
+                            break;
+                        }
+                    }
+                    if (!$isFound) {
+                        $pageLinks[] = $pageLink;
+                    }
                 }
             }
         }
