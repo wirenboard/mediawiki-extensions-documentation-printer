@@ -174,7 +174,7 @@ class SpecialPrint extends \SpecialPage {
         $titlePageHTML.= '        </div>';
         $titlePageHTML.= '    </div>';
         $titlePageHTML.= '    <div class="title-page-content">';
-        $titlePageHTML.= '        <h1 style="display: block; margin-top: 0; border: 0; text-align: center; font-size: 40px; font-weight: bold; color: #5cb300">'.$page->getTitle()->getText().'</h1>';
+        $titlePageHTML.= '        <h1 style="display: block; margin-top: 0; border: 0; text-align: center; font-size: 40px; font-weight: bold; color: #5cb300">'.$this->getPageLinkTitle($page).'</h1>';
         $titlePageHTML.= '        <div style="margin-top: 5px;">';
         $titlePageHTML.= '            <span style="display: block; text-align: center; font-size: 25px;">Руководство по эксплуатации</span>';
         $titlePageHTML.= '            <span style="display: block; margin-top: 10px; text-align: center; font-size: 15px;">Самая актуальная документация всегда доступна на нашем сайте по ссылке: <a href="'.$currentUrl.'">'.$currentUrl.'</a></span>';
